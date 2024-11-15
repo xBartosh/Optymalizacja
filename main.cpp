@@ -64,7 +64,6 @@ void lab0() {
 }
 
 void lab1() {
-    // exp
     double epsilon = 1e-5, gamma = 1e-200;
     int Nmax = 1000;
     double d = 1.0;
