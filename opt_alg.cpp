@@ -108,11 +108,13 @@ solution fib(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
     }
 }
 
-solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double epsilon, double gamma, int Nmax, matrix ud1, matrix ud2) {
+solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double epsilon, double gamma, int Nmax,
+             matrix ud1, matrix ud2) {
     try {
         solution Xopt;
-        solution A(a), B(b), C((a + b) / 2), D[2];
-        D[0] = solution(a);
+        solution A(a), B(b), C((a + b) / 2);
+        solution D_0(a);
+        solution D_1;
 
         A.fit_fun(ff);
         B.fit_fun(ff);
@@ -130,46 +132,48 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
             double m = m2d(m1 + m2 + m3);
 
             if (m <= 0) {
-                cerr << "m <= 0\n";
-                Xopt = D[0];
+                D_0.fit_fun(ff);
+                cout << "m <= 0\n";
+                Xopt = D_0;
                 return Xopt;
             }
 
-            D[1] = solution(0.5 * l / m);
-            if (A.x < D[1].x && D[1].x < C.x) {
-                if (D[1].fit_fun(ff) < C.y) {
+            D_1 = solution(0.5 * l / m);
+            D_1.fit_fun(ff);
+
+            if (A.x <= D_1.x && D_1.x <= C.x) {
+                if (D_1.y < C.y) {
                     B = C;
-                    C = D[1];
+                    C = D_1;
                 } else {
-                    A = D[1];
+                    A = D_1;
                 }
-            } else if (C.x < D[1].x && D[1].x < B.x) {
-                if (D[1].fit_fun(ff) < C.y) {
+            } else if (C.x <= D_1.x && D_1.x <= B.x) {
+                if (D_1.y < C.y) {
                     A = C;
-                    C = D[1];
+                    C = D_1;
                 } else {
-                    B = D[1];
+                    B = D_1;
                 }
             } else {
-                cerr << "D[1] is outside the interval [A.x, C.x] and [C.x, B.x]\n";
-                Xopt = D[0];
+                cout << "D_1 is outside the interval [A.x, C.x] and [C.x, B.x]\n";
+                D_0.fit_fun(ff);
+                Xopt = D_0;
                 return Xopt;
             }
 
-            if (m2d(B.x - A.x) < epsilon || abs(m2d(D[1].x - D[0].x)) < gamma) {
-                Xopt = D[1];
+            if (m2d(B.x - A.x) < epsilon || abs(m2d(D_1.x - D_0.x)) < gamma) {
+                Xopt = D_1;
                 return Xopt;
             }
 
             if (solution::f_calls > Nmax) {
-                Xopt = D[1];
+                Xopt = D_1;
                 return Xopt;
             }
 
-            D[0] = D[1];
+            D_0 = D_1;
         }
-
-        return Xopt;
     } catch
     (string ex_info) {
         cerr << ex_info;

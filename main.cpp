@@ -63,33 +63,67 @@ void lab0() {
     Y[1].~matrix();
 }
 
+bool is_global_min(double x, double y) {
+    const double global_x = 62.7482;
+    const double global_y = -0.921148;
+
+    const double tolerance = 0.001;
+
+    return (std::abs(x - global_x) < tolerance) && (std::abs(y - global_y) < tolerance);
+}
+
+string to_string_with_comma(double value) {
+    ostringstream oss;
+    oss << value;
+    string result = oss.str();
+    replace(result.begin(), result.end(), '.', ',');
+    return result;
+}
+
 void lab1() {
     double epsilon = 1e-5, gamma = 1e-200;
     int Nmax = 1000;
     double d = 1.0;
-    double alpha = 1.5;
+    double alpha = 5.0;
+    char separator = ';';
 
-    // exp
-    cout << "Optymalizacja funkcji testowej metoda ekspansji:" << endl;
-    double x0 = 100;
-    double *interval = expansion(ff1T, x0, d, alpha, Nmax);
-    double a = interval[0];
-    double b = interval[1];
-    cout << "Przedzial znaleziony metoda ekspansji: [" << a << ", " << b << "]" << endl;
-    cout << "ile fcall = " << solution::f_calls << endl;
-    delete[] interval;
+    srand(time(0));
 
-    // fib
-    solution::clear_calls();
-    solution opt;
-    opt = fib(ff1T, a, b, epsilon);
-    cout << "\nMetoda Fibonacciego\n" << opt << endl;
+    ofstream expFile("expansion_results-" + format("{:.2f}", alpha) + ".csv");
+    ofstream fibFile("fibonacci_results-" + format("{:.2f}", alpha) + ".csv");
+    ofstream lagFile("lagrange_results-" + format("{:.2f}", alpha) + ".csv");
 
-    // lag
-    solution::clear_calls();
-    opt = lag(ff1T, a, b, epsilon, gamma, Nmax);
-    cout << "Metoda Lagrange'a\n" << opt << endl;
+    expFile << "alpha" << separator << "x0" << separator << "a" << separator << "b" << separator << "f_calls\n";
+    fibFile << "alpha" << separator << "x*" << separator << "y*" << separator << "f_calls" << separator << "min(local/global)\n";
+    lagFile << "alpha" << separator << "x*" << separator << "y*" << separator << "f_calls" << separator << "min(local/global)\n";
+
+    for (int i = 0; i < 100; i++) {
+        // EXPANSION
+        double x0 = m2d(200 * rand_mat() - 100);
+        double *interval = expansion(ff1T, x0, d, alpha, Nmax);
+        double a = interval[0];
+        double b = interval[1];
+        expFile << to_string_with_comma(alpha) << separator << to_string_with_comma(x0) << separator << to_string_with_comma(a) << separator << to_string_with_comma(b) << separator << solution::f_calls << "\n";
+        delete[] interval;
+
+        // FIBONACCI
+        solution::clear_calls();
+        solution opt = fib(ff1T, a, b, epsilon);
+        std::string minType = is_global_min(m2d(opt.x), m2d(opt.y)) ? "globalne" : "lokalne";
+        fibFile << to_string_with_comma(alpha) << separator << to_string_with_comma(m2d(opt.x)) << separator << to_string_with_comma(m2d(opt.y)) << separator << solution::f_calls << separator << minType << "\n";
+
+        // LAGRANGE
+        solution::clear_calls();
+        opt = lag(ff1T, a, b, epsilon, gamma, Nmax);
+        minType = is_global_min(m2d(opt.x), m2d(opt.y)) ? "globalne" : "lokalne";
+        lagFile << to_string_with_comma(alpha) << separator << to_string_with_comma(m2d(opt.x)) << separator << to_string_with_comma(m2d(opt.y)) << separator << solution::f_calls << separator << minType << "\n";
+    }
+
+    expFile.close();
+    fibFile.close();
+    lagFile.close();
 }
+
 
 void lab2() {
 }
