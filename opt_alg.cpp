@@ -80,6 +80,8 @@ solution fib(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
         float range = b - a;
 
         int k = static_cast<int>(ceil(log2(sqrt(5) * range / epsilon) / log2((1 + sqrt(5)) / 2)));
+        Xopt.ud = matrix(range);
+
         vector<double> fibonaccis(k, 1);
         for (int i = 2; i < k; i++) {
             fibonaccis[i] = fibonaccis[i - 2] + fibonaccis[i - 1];
@@ -98,6 +100,7 @@ solution fib(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
 
             C.x = B.x - fibonaccis[k - i - 2] / fibonaccis[k - i - 1] * (B.x - A.x);
             D.x = A.x + B.x - C.x;
+            Xopt.ud.add_row(B.x - A.x);
         }
 
         Xopt = (C.y < D.y) ? C : D;
@@ -115,6 +118,8 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
         solution A(a), B(b), C((a + b) / 2);
         solution D_0(a);
         solution D_1;
+
+        Xopt.ud = B.x - A.x;
 
         A.fit_fun(ff);
         B.fit_fun(ff);
@@ -161,6 +166,8 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
                 Xopt = D_0;
                 return Xopt;
             }
+
+            Xopt.ud.add_row(B.x - A.x);
 
             if (m2d(B.x - A.x) < epsilon || abs(m2d(D_1.x - D_0.x)) < gamma) {
                 Xopt = D_1;

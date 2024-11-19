@@ -9,6 +9,7 @@ Data ostatniej modyfikacji: 19.09.2023
 *********************************************/
 
 #include"opt_alg.h"
+#define SEPARATOR ";"
 
 void lab0();
 
@@ -80,22 +81,29 @@ string to_string_with_comma(double value) {
     return result;
 }
 
+void save_single_column_matrix_to_file(matrix m, ofstream& file) {
+    for (int i = 0; i < get_len(m); i++) {
+        file << (i + 1) << SEPARATOR << to_string_with_comma(m(i, 0)) << "\n";
+    }
+}
+
 void lab1() {
     double epsilon = 1e-5, gamma = 1e-200;
     int Nmax = 1000;
     double d = 1.0;
     double alpha = 5.0;
-    char separator = ';';
 
+    // Z ZAW??ANIEM PRZEDZIA?U (TABELA 1, TABELA 2)
+    /*
     srand(time(0));
 
     ofstream expFile("expansion_results-" + format("{:.2f}", alpha) + ".csv");
     ofstream fibFile("fibonacci_results-" + format("{:.2f}", alpha) + ".csv");
     ofstream lagFile("lagrange_results-" + format("{:.2f}", alpha) + ".csv");
 
-    expFile << "alpha" << separator << "x0" << separator << "a" << separator << "b" << separator << "f_calls\n";
-    fibFile << "alpha" << separator << "x*" << separator << "y*" << separator << "f_calls" << separator << "min(local/global)\n";
-    lagFile << "alpha" << separator << "x*" << separator << "y*" << separator << "f_calls" << separator << "min(local/global)\n";
+    expFile << "alpha" << SEPARATOR << "x0" << SEPARATOR << "a" << SEPARATOR << "b" << SEPARATOR << "f_calls\n";
+    fibFile << "alpha" << SEPARATOR << "x*" << SEPARATOR << "y*" << SEPARATOR << "f_calls" << SEPARATOR << "min(local/global)\n";
+    lagFile << "alpha" << SEPARATOR << "x*" << SEPARATOR << "y*" << SEPARATOR << "f_calls" << SEPARATOR << "min(local/global)\n";
 
     for (int i = 0; i < 100; i++) {
         // EXPANSION
@@ -103,23 +111,44 @@ void lab1() {
         double *interval = expansion(ff1T, x0, d, alpha, Nmax);
         double a = interval[0];
         double b = interval[1];
-        expFile << to_string_with_comma(alpha) << separator << to_string_with_comma(x0) << separator << to_string_with_comma(a) << separator << to_string_with_comma(b) << separator << solution::f_calls << "\n";
+        expFile << to_string_with_comma(alpha) << SEPARATOR << to_string_with_comma(x0) << SEPARATOR << to_string_with_comma(a) << SEPARATOR << to_string_with_comma(b) << SEPARATOR << solution::f_calls << "\n";
         delete[] interval;
 
         // FIBONACCI
         solution::clear_calls();
         solution opt = fib(ff1T, a, b, epsilon);
         std::string minType = is_global_min(m2d(opt.x), m2d(opt.y)) ? "globalne" : "lokalne";
-        fibFile << to_string_with_comma(alpha) << separator << to_string_with_comma(m2d(opt.x)) << separator << to_string_with_comma(m2d(opt.y)) << separator << solution::f_calls << separator << minType << "\n";
+        fibFile << to_string_with_comma(alpha) << SEPARATOR << to_string_with_comma(m2d(opt.x)) << SEPARATOR << to_string_with_comma(m2d(opt.y)) << SEPARATOR << solution::f_calls << SEPARATOR << minType << "\n";
 
         // LAGRANGE
         solution::clear_calls();
         opt = lag(ff1T, a, b, epsilon, gamma, Nmax);
         minType = is_global_min(m2d(opt.x), m2d(opt.y)) ? "globalne" : "lokalne";
-        lagFile << to_string_with_comma(alpha) << separator << to_string_with_comma(m2d(opt.x)) << separator << to_string_with_comma(m2d(opt.y)) << separator << solution::f_calls << separator << minType << "\n";
+        lagFile << to_string_with_comma(alpha) << SEPARATOR << to_string_with_comma(m2d(opt.x)) << SEPARATOR << to_string_with_comma(m2d(opt.y)) << SEPARATOR << solution::f_calls << SEPARATOR << minType << "\n";
     }
 
     expFile.close();
+    fibFile.close();
+    lagFile.close();
+    */
+
+    // BEZ ZAW??ANIA PRZEDZIA?U (WYKRES)
+    double a = -100, b = 100;
+
+    ofstream fibFile("fibonacci_results-no-expansion.csv");
+    ofstream lagFile("lagrange_results-no-expansion.csv");
+
+    fibFile << "i" << SEPARATOR << "(b-a)" << "\n";
+    lagFile << "i" << SEPARATOR << "(b-a)" << "\n";
+
+    solution optFib = fib(ff1T, a, b, epsilon);
+    save_single_column_matrix_to_file(optFib.ud, fibFile);
+    solution::clear_calls();
+
+    solution optLag = lag(ff1T, a, b, epsilon, gamma, Nmax);
+    save_single_column_matrix_to_file(optLag.ud, lagFile);
+    solution::clear_calls();
+
     fibFile.close();
     lagFile.close();
 }
