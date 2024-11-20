@@ -61,7 +61,8 @@ matrix ff1T(matrix x, matrix ud1, matrix ud2) {
 
 matrix ff1R(matrix x, matrix ud1, matrix ud2) {
     matrix result;
-    matrix initialValues = matrix(3, new double[3]{5, 1, 20});
+    double vA = 5, vB = 1, tB_0 = 20;
+    matrix initialValues = matrix(3, new double[3]{vA, vB, tB_0});
 
     matrix *simulationData = solve_ode(df1, 0, 1, 2000, initialValues, ud1, ud2);
     int dataLength = get_len(simulationData[0]);
