@@ -33,8 +33,8 @@ double *expansion(matrix (*ff)(matrix, matrix, matrix), double x0, double d, dou
         solution X0(x0);
         solution X1(x0 + d);
 
-        X0.fit_fun(ff);
-        X1.fit_fun(ff);
+        X0.fit_fun(ff, ud1, ud2);
+        X1.fit_fun(ff, ud1, ud2);
 
         if (X1.y == X0.y) {
             p[0] = m2d(X0.y);
@@ -45,7 +45,7 @@ double *expansion(matrix (*ff)(matrix, matrix, matrix), double x0, double d, dou
         if (X1.y > X0.y) {
             d = -d;
             X1.x = x0 + d;
-            X1.fit_fun(ff);
+            X1.fit_fun(ff, ud1, ud2);
             if (X1.y >= X0.y) {
                 p[0] = m2d(X1.y);
                 p[1] = m2d(X0.y - d);
@@ -57,7 +57,7 @@ double *expansion(matrix (*ff)(matrix, matrix, matrix), double x0, double d, dou
         while (solution::f_calls <= Nmax) {
             ++i;
             X2.x = x0 + pow(alpha, i) * d;
-            X2.fit_fun(ff);
+            X2.fit_fun(ff, ud1, ud2);
 
             if (X2.y > X1.y) break;
             X0 = X1;
@@ -92,7 +92,7 @@ solution fib(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
         solution D(A.x + B.x - C.x);
 
         for (int i = 0; i < k - 2; i++) {
-            if (C.fit_fun(ff) < D.fit_fun(ff)) {
+            if (C.fit_fun(ff, ud1, ud2) < D.fit_fun(ff, ud1, ud2)) {
                 B = D;
             } else {
                 A = C;
@@ -121,9 +121,9 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
 
         Xopt.ud = B.x - A.x;
 
-        A.fit_fun(ff);
-        B.fit_fun(ff);
-        C.fit_fun(ff);
+        A.fit_fun(ff, ud1, ud2);
+        B.fit_fun(ff, ud1, ud2);
+        C.fit_fun(ff, ud1, ud2);
 
         while (true) {
             matrix l1 = A.y * (pow(B.x, 2) - pow(C.x, 2));
@@ -137,14 +137,14 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
             double m = m2d(m1 + m2 + m3);
 
             if (m <= 0) {
-                D_0.fit_fun(ff);
+                D_0.fit_fun(ff, ud1, ud2);
                 cout << "m <= 0\n";
                 Xopt = D_0;
                 return Xopt;
             }
 
             D_1 = solution(0.5 * l / m);
-            D_1.fit_fun(ff);
+            D_1.fit_fun(ff, ud1, ud2);
 
             if (A.x <= D_1.x && D_1.x <= C.x) {
                 if (D_1.y < C.y) {
@@ -162,7 +162,7 @@ solution lag(matrix (*ff)(matrix, matrix, matrix), double a, double b, double ep
                 }
             } else {
                 cout << "D_1 is outside the interval [A.x, C.x] and [C.x, B.x]\n";
-                D_0.fit_fun(ff);
+                D_0.fit_fun(ff, ud1, ud2);
                 Xopt = D_0;
                 return Xopt;
             }

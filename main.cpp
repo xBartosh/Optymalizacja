@@ -8,6 +8,8 @@ Akademia Górniczo-Hutnicza
 Data ostatniej modyfikacji: 19.09.2023
 *********************************************/
 
+#include <float.h>
+
 #include"opt_alg.h"
 #define SEPARATOR ";"
 
@@ -93,7 +95,7 @@ void lab1() {
     double d = 1.0;
     double alpha = 5.0;
 
-    // Z ZAW??ANIEM PRZEDZIA?U (TABELA 1, TABELA 2)
+    // Z ZAWEANIEM PRZEDZIALU (TABELA 1, TABELA 2)
     /*
     srand(time(0));
 
@@ -132,7 +134,9 @@ void lab1() {
     lagFile.close();
     */
 
+
     // BEZ ZAW??ANIA PRZEDZIA?U (WYKRES)
+    /*
     double a = -100, b = 100;
 
     ofstream fibFile("fibonacci_results-no-expansion.csv");
@@ -143,14 +147,26 @@ void lab1() {
 
     solution optFib = fib(ff1T, a, b, epsilon);
     save_single_column_matrix_to_file(optFib.ud, fibFile);
+    cout << optFib << endl;
     solution::clear_calls();
+
 
     solution optLag = lag(ff1T, a, b, epsilon, gamma, Nmax);
     save_single_column_matrix_to_file(optLag.ud, lagFile);
+    cout << optLag << endl;
     solution::clear_calls();
 
     fibFile.close();
     lagFile.close();
+    */
+
+    solution opt = fib(ff1R, 1e-4, 1e-2, 1e-5);
+    cout << opt << endl;
+    solution::clear_calls();
+
+    opt = lag(ff1R, 1e-4, 1e-2, 1e-5, 1e-200, 1000);
+    cout << opt;
+    solution::clear_calls();
 }
 
 

@@ -32,9 +32,45 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2) {
     return dY;
 }
 
+matrix df1(double t, matrix Y, matrix ud1, matrix ud2) {
+    double a = 0.98, b = 0.63, g = 9.81;
+    double PA = 1, TA = 90, PB = 1, DB = 0.00365665, Fin = 0.01, Tin = 10;
+
+    matrix dY(3, 1);
+
+    double FAout = (Y(0) > 0)
+                       ? a * b * m2d(ud2) * sqrt(2 * g * Y(0) / PA)
+                       : 0;
+
+    double FBout = (Y(1) > 0)
+                       ? a * b * DB * sqrt(2 * g * Y(1) / PB)
+                       : 0;
+
+    dY(0) = -FAout;
+    dY(1) = FAout + Fin - FBout;
+    dY(2) = Fin / Y(1) * (Tin - Y(2)) + FAout / Y(1) * (TA - Y(2));
+
+    return dY;
+}
 
 matrix ff1T(matrix x, matrix ud1, matrix ud2) {
     double x_val = x(0);
     matrix y = -cos(0.1 * x_val) * exp(-pow(0.1 * x_val - 2 * M_PI, 2)) + 0.002 * pow(0.1 * x_val, 2);
     return y;
+}
+
+matrix ff1R(matrix x, matrix ud1, matrix ud2) {
+    matrix result;
+    matrix initialValues = matrix(3, new double[3]{5, 1, 10});
+
+    matrix *simulationData = solve_ode(df1, 0, 1, 2000, initialValues, ud1, ud2);
+    int dataLength = get_len(simulationData[0]);
+
+    double maxValue = simulationData[1](0, 2);
+    for (int index = 1; index < dataLength; ++index) {
+        maxValue = std::max(maxValue, simulationData[1](index, 2));
+    }
+
+    result = abs(maxValue - 50);
+    return result;
 }
