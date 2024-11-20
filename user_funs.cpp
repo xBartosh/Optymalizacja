@@ -34,7 +34,7 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2) {
 
 matrix df1(double t, matrix Y, matrix ud1, matrix ud2) {
     double a = 0.98, b = 0.63, g = 9.81;
-    double PA = 1, TA = 90, PB = 1, DB = 0.00365665, Fin = 0.01, Tin = 10;
+    double PA = 0.5, TA = 90, PB = 1, DB = 0.00365665, Fin = 0.01, Tin = 20;
 
     matrix dY(3, 1);
 
@@ -61,7 +61,7 @@ matrix ff1T(matrix x, matrix ud1, matrix ud2) {
 
 matrix ff1R(matrix x, matrix ud1, matrix ud2) {
     matrix result;
-    matrix initialValues = matrix(3, new double[3]{5, 1, 10});
+    matrix initialValues = matrix(3, new double[3]{5, 1, 20});
 
     matrix *simulationData = solve_ode(df1, 0, 1, 2000, initialValues, ud1, ud2);
     int dataLength = get_len(simulationData[0]);
