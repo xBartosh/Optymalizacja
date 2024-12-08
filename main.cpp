@@ -160,11 +160,17 @@ void lab1() {
     lagFile.close();
     */
 
-    solution opt = fib(ff1R, 1e-4, 1e-2, 1e-5);
+    double a = 1e-4; // 1 cm ^ 2
+    double b = 1e-2; // 100 cm^2
+    double epsilon = 1e-5; // jakas dokladnosc
+    double gamma = 1e-200; // jakas dokladnosc ale wieksza
+    int maxIter = 1000;
+
+    solution opt = fib(ff1R, a, b, epsilon );
     cout << opt << endl;
     solution::clear_calls();
 
-    opt = lag(ff1R, 1e-4, 1e-2, 1e-5, 1e-200, 1000);
+    opt = lag(ff1R, a, b, epsilon, gamma, maxIter);
     cout << opt;
     solution::clear_calls();
 }

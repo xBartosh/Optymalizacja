@@ -75,6 +75,9 @@ solution& solution::operator=(const solution& A)
 	return *this;
 }
 
+/// <summary>
+/// Oblicza wartoœæ na podstawie zapisanej zmiennej 'x' oraz dodatkowych parametrów ud1, ud2 
+/// </summary>
 matrix solution::fit_fun(matrix(*ff)(matrix, matrix, matrix), matrix ud1, matrix ud2)
 {
 	try

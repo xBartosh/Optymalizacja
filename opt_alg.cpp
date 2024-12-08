@@ -73,7 +73,14 @@ double *expansion(matrix (*ff)(matrix, matrix, matrix), double x0, double d, dou
 }
 
 
-solution fib(matrix (*ff)(matrix, matrix, matrix), double a, double b, double epsilon, matrix ud1, matrix ud2) {
+solution fib(
+    matrix (*ff)(matrix, matrix, matrix), // funkcja celu
+    double a, 
+    double b, 
+    double epsilon, 
+    matrix ud1, 
+    matrix ud2) 
+{
     try {
         solution Xopt;
 

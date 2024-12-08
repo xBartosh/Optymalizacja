@@ -32,7 +32,15 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2) {
     return dY;
 }
 
-matrix df1(double t, matrix Y, matrix ud1, matrix ud2) {
+/// <summary>
+/// 
+/// </summary>
+matrix df1(
+    double t, // 
+    matrix Y, // poczatkowe wartosci
+    matrix ud1, 
+    matrix ud2) 
+{
     double a = 0.98, b = 0.63, g = 9.81;
     double PA = 0.5, TA = 90, PB = 1, DB = 0.00365665, Fin = 0.01, Tin = 20;
 
@@ -59,19 +67,27 @@ matrix ff1T(matrix x, matrix ud1, matrix ud2) {
     return y;
 }
 
-matrix ff1R(matrix x, matrix ud1, matrix ud2) {
-    matrix result;
-    double vA = 5, vB = 1, tB_0 = 20;
-    matrix initialValues = matrix(3, new double[3]{vA, vB, tB_0});
+/// <summary>
+/// Funkcja celu - LAB 1
+/// </summary>
+matrix ff1R( matrix x, matrix ud1, matrix ud2 ) {
+    double t0 = 0;
+    double dt = 1;
+    double t_end = 2000;
+    double vA = 5; // obj. wody w A
+    double vB = 1; // obj. wody w B
+    double tB_0 = 20; // temp. pocz. w B
+    matrix initialValues = matrix( 3, new double[ 3 ] {vA, vB, tB_0} );
 
-    matrix *simulationData = solve_ode(df1, 0, 1, 2000, initialValues, ud1, ud2);
-    int dataLength = get_len(simulationData[0]);
 
-    double maxValue = simulationData[1](0, 2);
-    for (int index = 1; index < dataLength; ++index) {
-        maxValue = std::max(maxValue, simulationData[1](index, 2));
+    matrix* simulationData = solve_ode( df1, t0, dt, t_end, initialValues, ud1, ud2 );
+    int dataLength = get_len( simulationData[ 0 ] );
+
+    double maxValue = simulationData[ 1 ]( 0, 2 );
+    for( int index = 1; index < dataLength; ++index ) {
+        maxValue = std::max( maxValue, simulationData[ 1 ]( index, 2 ) );
     }
 
-    result = abs(maxValue - 50);
+    matrix result = abs( maxValue - 50 );
     return result;
 }
