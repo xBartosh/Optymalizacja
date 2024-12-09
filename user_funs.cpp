@@ -67,10 +67,7 @@ matrix ff1T(matrix x, matrix ud1, matrix ud2) {
     return y;
 }
 
-/// <summary>
-/// Funkcja celu - LAB 1
-/// </summary>
-matrix ff1R( matrix x, matrix ud1, matrix ud2 ) {
+matrix* getSimulationData1R( matrix x, matrix ud1, matrix ud2) {
     double t0 = 0;
     double dt = 1;
     double t_end = 2000;
@@ -79,8 +76,15 @@ matrix ff1R( matrix x, matrix ud1, matrix ud2 ) {
     double tB_0 = 20; // temp. pocz. w B
     matrix initialValues = matrix( 3, new double[ 3 ] {vA, vB, tB_0} );
 
+    return solve_ode( df1, t0, dt, t_end, initialValues, ud1, x );
+}
 
-    matrix* simulationData = solve_ode( df1, t0, dt, t_end, initialValues, ud1, ud2 );
+/// <summary>
+/// Funkcja celu - LAB 1
+/// </summary>
+matrix ff1R( matrix x, matrix ud1, matrix ud2 ) {
+    matrix* simulationData = getSimulationData1R(x, ud1, ud2);;
+
     int dataLength = get_len( simulationData[ 0 ] );
 
     double maxValue = simulationData[ 1 ]( 0, 2 );

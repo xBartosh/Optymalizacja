@@ -83,19 +83,19 @@ string to_string_with_comma(double value) {
     return result;
 }
 
-void save_single_column_matrix_to_file(matrix m, ofstream& file) {
+void save_single_column_matrix_to_file(matrix m, ofstream &file) {
     for (int i = 0; i < get_len(m); i++) {
         file << (i + 1) << SEPARATOR << to_string_with_comma(m(i, 0)) << "\n";
     }
 }
 
 void lab1() {
-    double epsilon = 1e-5, gamma = 1e-200;
+    double epsilon = 1e-10, gamma = 1e-200;
     int Nmax = 1000;
     double d = 1.0;
     double alpha = 5.0;
 
-    // Z ZAWEANIEM PRZEDZIALU (TABELA 1, TABELA 2)
+    // Z ZAWEZANIEM PRZEDZIALU (TABELA 1, TABELA 2)
     /*
     srand(time(0));
 
@@ -135,7 +135,7 @@ void lab1() {
     */
 
 
-    // BEZ ZAW??ANIA PRZEDZIA?U (WYKRES)
+    // BEZ ZAWEZANIA PRZEDZIALU (WYKRES)
     /*
     double a = -100, b = 100;
 
@@ -162,16 +162,28 @@ void lab1() {
 
     double a = 1e-4; // 1 cm ^ 2
     double b = 1e-2; // 100 cm^2
-    double epsilon = 1e-5; // jakas dokladnosc
-    double gamma = 1e-200; // jakas dokladnosc ale wieksza
+    // double epsilon = 1e-5; // jakas dokladnosc
+    // double gamma = 1e-200; // jakas dokladnosc ale wieksza
     int maxIter = 1000;
 
-    solution opt = fib(ff1R, a, b, epsilon );
+    ofstream fibFile("simulation-fib.csv");
+    fibFile << "i" << SEPARATOR << "vA" << SEPARATOR << "vB" << SEPARATOR << "tB" << endl;
+    solution opt = fib(ff1R, a, b, epsilon);
     cout << opt << endl;
+
+    matrix *simDataFib = getSimulationData1R(opt.x);
+    fibFile << hcat(simDataFib[0], simDataFib[1]);
+    fibFile.close();
     solution::clear_calls();
 
+
+    ofstream lagFile("simulation-lag.csv");
+    lagFile << "i" << SEPARATOR << "vA" << SEPARATOR << "vB" << SEPARATOR << "tB" << endl;
     opt = lag(ff1R, a, b, epsilon, gamma, maxIter);
     cout << opt;
+    matrix* simDataLag = getSimulationData1R(opt.x);
+    lagFile << hcat(simDataLag[0], simDataLag[1]);
+    lagFile.close();
     solution::clear_calls();
 }
 
