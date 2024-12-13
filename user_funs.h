@@ -2,6 +2,11 @@
 
 #include"ode_solver.h"
 
+#include <cmath>
+
+#define M_PI 3.14159265359
+
+
 matrix ff0T(matrix, matrix = NAN, matrix = NAN);
 matrix ff0R(matrix, matrix = NAN, matrix = NAN);
 
