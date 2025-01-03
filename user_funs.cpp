@@ -61,7 +61,26 @@ matrix df1(
 }
 
 matrix df2(double t, matrix Y, matrix ud1, matrix ud2) {
+    matrix dY(4, 1);
 
+    double r = 0.12;
+    double C = 0.47;
+    double ro = 1.2;
+    double S = M_PI * pow(r, 2);
+    double m = 0.6;
+    double g = 9.81;
+
+    double Dx = 0.5 * C * ro * S * Y(1) * abs(Y(1));
+    double Fmx = ro * Y(3) * m2d(ud2) * M_PI * pow(r, 3);
+    double Dy = 0.5 * C * ro * S * Y(3) * abs(Y(3));
+    double Fmy = ro * Y(1) * m2d(ud2) * M_PI * pow(r, 3);
+
+    dY(0) = Y(1);
+    dY(1) = (-Fmx - Dx) / m;
+    dY(2) = Y(3);
+    dY(3) = (-Fmy - Dy - m * g) / m;
+
+    return dY;
 }
 
 matrix ff1T(matrix x, matrix ud1, matrix ud2) {
@@ -161,6 +180,5 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2) {
         y = y + ud2 * pow(abs(x(1) - 20), 2);
     if (abs(Y[1](i50, 0) - 5) - 1 > 0)
         y = y + ud2 * pow(abs(Y[1](i50, 0) - 5) - 1, 2);
-    pom = y;
     return y;
 }
