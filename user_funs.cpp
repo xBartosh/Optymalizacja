@@ -38,9 +38,8 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2) {
 matrix df1(
     double t, // 
     matrix Y, // poczatkowe wartosci
-    matrix ud1, 
-    matrix ud2) 
-{
+    matrix ud1,
+    matrix ud2) {
     double a = 0.98, b = 0.63, g = 9.81;
     double PA = 0.5, TA = 90, PB = 1, DB = 0.00365665, Fin = 0.01, Tin = 20;
 
@@ -61,37 +60,107 @@ matrix df1(
     return dY;
 }
 
+matrix df2(double t, matrix Y, matrix ud1, matrix ud2) {
+
+}
+
 matrix ff1T(matrix x, matrix ud1, matrix ud2) {
     double x_val = x(0);
     matrix y = -cos(0.1 * x_val) * exp(-pow(0.1 * x_val - 2 * M_PI, 2)) + 0.002 * pow(0.1 * x_val, 2);
     return y;
 }
 
-matrix* getSimulationData1R( matrix x, matrix ud1, matrix ud2) {
+matrix *getSimulationData1R(matrix x, matrix ud1, matrix ud2) {
     double t0 = 0;
     double dt = 1;
     double t_end = 2000;
     double vA = 5; // obj. wody w A
     double vB = 1; // obj. wody w B
     double tB_0 = 20; // temp. pocz. w B
-    matrix initialValues = matrix( 3, new double[ 3 ] {vA, vB, tB_0} );
+    matrix initialValues = matrix(3, new double[3]{vA, vB, tB_0});
 
-    return solve_ode( df1, t0, dt, t_end, initialValues, ud1, x );
+    return solve_ode(df1, t0, dt, t_end, initialValues, ud1, x);
 }
 
 /// <summary>
 /// Funkcja celu - LAB 1
 /// </summary>
-matrix ff1R( matrix x, matrix ud1, matrix ud2 ) {
-    matrix* simulationData = getSimulationData1R(x, ud1, ud2);;
+matrix ff1R(matrix x, matrix ud1, matrix ud2) {
+    matrix *simulationData = getSimulationData1R(x, ud1, ud2);;
 
-    int dataLength = get_len( simulationData[ 0 ] );
+    int dataLength = get_len(simulationData[0]);
 
-    double maxValue = simulationData[ 1 ]( 0, 2 );
-    for( int index = 1; index < dataLength; ++index ) {
-        maxValue = std::max( maxValue, simulationData[ 1 ]( index, 2 ) );
+    double maxValue = simulationData[1](0, 2);
+    for (int index = 1; index < dataLength; ++index) {
+        maxValue = std::max(maxValue, simulationData[1](index, 2));
     }
 
-    matrix result = abs( maxValue - 50 );
+    matrix result = abs(maxValue - 50);
     return result;
+}
+
+double ff2T(matrix x, matrix ud1, matrix ud2) {
+    double pom = M_PI * std::sqrt(std::pow(x(0) / M_PI, 2) + std::pow(x(1) / M_PI, 2));
+    return std::sin(pom) / pom;
+}
+
+double boundary(int i, matrix x, double a) {
+    switch (i) {
+        case 0:
+            return -x(0) + 1.0;
+        case 1:
+            return -x(1) + 1.0;
+        case 2:
+            return norm(x) - a;
+        default:
+            return 0.0;
+    }
+}
+
+matrix ff2Tw(matrix x, matrix ud1, matrix ud2) {
+    double y = ff2T(x);
+
+    double gValue = -x(0) + 1;
+    if (gValue > 0) {
+        y = 1e10;
+    } else {
+        y -= m2d(ud2 / gValue);
+    }
+    return y;
+}
+
+matrix ff2Tz(matrix x, matrix ud1, matrix ud2) {
+    double y = ff2T(x);
+
+    for (int i = 0; i < 3; ++i) {
+        double gValue = boundary(i, x(0), x(1), ud1(0));
+        if (gValue > 0)
+            y += m2d(ud2 * pow(gValue, 2));
+    }
+
+    return y;
+}
+
+matrix ff2R(matrix x, matrix ud1, matrix ud2) {
+    matrix y;
+    matrix Y0(4, new double[4]{0, x(0), 100, 0});
+    matrix *Y = solve_ode(df2, 0, 0.01, 7, Y0, ud1, x(1));
+    int n = get_len(Y[0]);
+    int i50 = 0, i0 = 0;
+    for (int i = 0; i < n; ++i) {
+        if (abs(Y[1](i, 2) - 50) < abs(Y[1](i50, 2) - 50))
+            i50 = i;
+        if (abs(Y[1](i, 2)) < abs(Y[1](i0, 2)))
+            i0 = i;
+    }
+
+    y = -Y[1](i0, 0);
+    if (abs(x(0) - 10) > 0)
+        y = y + ud2 * pow(abs(x(0) - 10), 2);
+    if (abs(x(1) - 20) > 0)
+        y = y + ud2 * pow(abs(x(1) - 20), 2);
+    if (abs(Y[1](i50, 0) - 5) - 1 > 0)
+        y = y + ud2 * pow(abs(Y[1](i50, 0) - 5) - 1, 2);
+    pom = y;
+    return y;
 }

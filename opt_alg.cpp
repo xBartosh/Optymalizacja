@@ -233,7 +233,29 @@ solution pen(matrix (*ff)(matrix, matrix, matrix), matrix x0, double c, double d
              matrix ud2) {
     try {
         solution Xopt;
-        //Tu wpisz kod funkcji
+        double alpha = 1, beta = 0.5, gamma = 2, delta = 0.5, s = 0.5;
+        solution X(x0), X1;
+
+        while (true)
+        {
+            X1 = sym_NM(ff, X.x, s, alpha, beta, gamma, delta, epsilon, Nmax, ud1, c);
+            if (norm(X1.x - X.x) < epsilon)
+            {
+                Xopt = X1;
+                Xopt.flag = 1;
+                break;
+            }
+
+            if (solution::f_calls > Nmax)
+            {
+                Xopt = X1;
+                Xopt.flag = 0;
+                break;
+            }
+
+            c = dc * c;
+            X = X1;
+        }
 
         return Xopt;
     } catch (string ex_info) {
@@ -244,9 +266,106 @@ solution pen(matrix (*ff)(matrix, matrix, matrix), matrix x0, double c, double d
 solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, double alpha, double beta, double gamma,
                 double delta, double epsilon, int Nmax, matrix ud1, matrix ud2) {
     try {
-        solution Xopt;
-        //Tu wpisz kod funkcji
+         solution Xopt;
+        int n = get_len(x0);
+        matrix D = ident_mat(n);
+        int N = n + 1;
+        solution* S = new solution[N];
+        S[0].x = x0;
+        S[0].fit_fun(ff, ud1, ud2);
 
+        for (int i = 1; i < N; ++i)
+        {
+            S[i].x = S[0].x + s * (D * (-1));
+            S[i].fit_fun(ff, ud1, ud2);
+        }
+
+        solution PC, PE, PZ;
+        matrix pc;
+        int i_min, i_max;
+
+        while (true)
+        {
+            i_min = i_max = 0;
+            for (int i = 1; i < N; ++i)
+            {
+                if (S[i_min].y > S[i].y)
+                    i_min = i;
+                if (S[i_max].y < S[i].y)
+                    i_max = i;
+            }
+
+            pc = matrix(n, 1);
+            for (int i = 0; i < N; ++i)
+            {
+                if (i != i_max)
+                    pc = pc + S[i].x;
+            }
+            pc = pc / (N - 1);
+
+            PC.x = pc;
+            PC.fit_fun(ff, ud1, ud2);
+            PE.x = pc + alpha * (pc - S[i_max].x);
+            PE.fit_fun(ff, ud1, ud2);
+
+            if (PE.y < S[i_min].y)
+            {
+                PZ.x = pc + gamma * (PE.x - pc);
+                PZ.fit_fun(ff, ud1, ud2);
+
+                if (PZ.y < S[i_min].y)
+                    S[i_max] = PZ;
+                else
+                    S[i_max] = PE;
+            }
+            else
+            {
+                if (PE.y < S[i_max].y)
+                {
+                    S[i_max] = PE;
+                }
+                else
+                {
+                    PZ.x = pc + beta * (S[i_max].x - pc);
+                    PZ.fit_fun(ff, ud1, ud2);
+
+                    if (PZ.y < S[i_max].y)
+                        S[i_max] = PZ;
+                    else
+                    {
+                        for (int i = 0; i < N; ++i)
+                        {
+                            if (i != i_min)
+                            {
+                                S[i].x = delta * (S[i].x + S[i_min].x);
+                                S[i].fit_fun(ff, ud1, ud2);
+                            }
+                        }
+                    }
+                }
+            }
+
+            double max_s = norm(S[0].x - S[i_min].x);
+            for (int i = 1; i < N; ++i)
+                if (max_s < norm(S[i].x - S[i_min].x))
+                    max_s = norm(S[i].x - S[i_min].x);
+
+            if (max_s < epsilon)
+            {
+                Xopt = S[i_min];
+                Xopt.flag = 1;
+                break;
+            }
+
+            if (solution::f_calls > Nmax)
+            {
+                Xopt = S[i_min];
+                Xopt.flag = 0;
+                break;
+            }
+        }
+
+        delete[] S;
         return Xopt;
     } catch (string ex_info) {
         throw ("solution sym_NM(...):\n" + ex_info);
