@@ -228,7 +228,8 @@ solution Rosen(matrix (*ff)(matrix, matrix, matrix), matrix x0, matrix s0, doubl
     }
 }
 
-solution pen(matrix (*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1,matrix ud2) {
+solution pen(matrix (*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1,
+             matrix ud2) {
     try {
         solution Xopt;
         double alpha = 1, beta = 0.5, gamma = 2, delta = 0.5, s = 1;
@@ -265,14 +266,24 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
         matrix D = ident_mat(n); // Macierz jednostkowa
         int N = n + 1; // Liczba wierzchołków simpleksu
 
-        solution* S = new solution[N]; // Simpleks
+        solution *S = new solution[N]; // Simpleks
 
         // Inicjalizacja simpleksu
         S[0].x = x0;
-        S[0].fit_fun(ff, ud1, ud2);
+        try {
+            S[0].fit_fun(ff, ud1, ud2);
+        } catch (string ex) {
+            cout << "Błąd w fit_fun dla punktu: " << S[0] << endl;
+            throw ex;
+        }
         for (int i = 1; i < N; ++i) {
             S[i].x = S[0].x + s * D[i - 1];
-            S[i].fit_fun(ff, ud1, ud2);
+            try {
+                S[i].fit_fun(ff, ud1, ud2);
+            } catch (string ex) {
+                cout << "Błąd w fit_fun dla punktu: " << S[i] << endl;
+                throw ex;
+            }
         }
 
         solution PO, PE, PZ;
@@ -299,12 +310,23 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
 
             // Refleksja
             PO.x = pc + alpha * (pc - S[i_max].x);
-            PO.fit_fun(ff, ud1, ud2);
+            try {
+                PO.fit_fun(ff, ud1, ud2);
+            } catch (string ex) {
+                cout << "Błąd w fit_fun dla punktu: " << PO << endl;
+                throw ex;
+            }
 
             if (PO.y < S[i_min].y) {
                 // Ekspansja
                 PE.x = pc + gamma * (PO.x - pc);
-                PE.fit_fun(ff, ud1, ud2);
+                try {
+                    PE.fit_fun(ff, ud1, ud2);
+                } catch (string ex) {
+                    cout << "Błąd w fit_fun dla punktu: " << PE << endl;
+                    throw ex;
+                }
+
                 S[i_max] = (PE.y < PO.y) ? PE : PO;
             } else if (PO.y < S[i_max].y) {
                 // Akceptacja refleksji
@@ -312,7 +334,12 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
             } else {
                 // Kontrakcja
                 PZ.x = pc + beta * (S[i_max].x - pc);
-                PZ.fit_fun(ff, ud1, ud2);
+                try {
+                    PZ.fit_fun(ff, ud1, ud2);
+                } catch (string ex) {
+                    cout << "Błąd w fit_fun dla punktu: " << PZ << endl;
+                    throw ex;
+                }
                 if (PZ.y < S[i_max].y) {
                     S[i_max] = PZ;
                 } else {
@@ -320,7 +347,12 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
                     for (int i = 0; i < N; ++i) {
                         if (i != i_min) {
                             S[i].x = S[i_min].x + delta * (S[i].x - S[i_min].x);
-                            S[i].fit_fun(ff, ud1, ud2);
+                            try {
+                                S[i].fit_fun(ff, ud1, ud2);
+                            } catch (string ex) {
+                                cout << "Błąd w fit_fun dla punktu: " << S[i] << endl;
+                                throw ex;
+                            }
                         }
                     }
                 }

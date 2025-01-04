@@ -125,7 +125,7 @@ double ff2T(matrix x, matrix ud1, matrix ud2) {
     return sin(pom) / pom;
 }
 
-double boundary(int i, matrix x, double a) {
+matrix boundary(int i, matrix x, double a) {
     switch (i) {
         case 0:
             return -x(0) + 1.0;
@@ -139,12 +139,21 @@ double boundary(int i, matrix x, double a) {
 }
 
 matrix ff2Tw(matrix x, matrix ud1, matrix ud2) {
-    double y = ff2T(x);
+    matrix y = ff2T(x);
 
-    for (int i = 0; i < 3; ++i) {
-        double gValue = boundary(i, x, ud1(0));
-        y -= m2d(ud2 / gValue);
+    if (-x(0) + 1 > 0) {
+        y = 1e10;
+    } else {
+        y = y - ud2 / (-x(0) + 1);
     }
+    // for (int i = 0; i < 3; i++) {
+    //     matrix gValue = boundary(i, x, ud1(0));
+    //     if (gValue == 0) {
+    //         boundary(i, x, ud1(0));
+    //         cout << "gvalue = 0, i=" << i << endl;
+    //     }
+    //     y = y - m2d(ud2 / gValue);
+    // }
 
     return y;
 }
@@ -153,7 +162,7 @@ matrix ff2Tz(matrix x, matrix ud1, matrix ud2) {
     double y = ff2T(x);
 
     for (int i = 0; i < 3; ++i) {
-        double gValue = boundary(i, x, ud1(0));
+        matrix gValue = boundary(i, x, ud1(0));
         if (gValue > 0)
             y += m2d(ud2 * pow(gValue, 2));
     }

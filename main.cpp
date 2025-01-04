@@ -189,7 +189,7 @@ void lab1() {
 
 
 void lab2() {
-    double a = 4.0;
+    double a = 5.0;
     double epsilon = 1e-3;
     int nMax = 1e4;
     double cEx = 1, dcEx = 2;
