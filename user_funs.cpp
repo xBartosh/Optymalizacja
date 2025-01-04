@@ -1,5 +1,7 @@
 #include"user_funs.h"
 
+matrix pom;
+
 matrix ff0T(matrix x, matrix ud1, matrix ud2) {
     matrix y;
 
@@ -119,8 +121,8 @@ matrix ff1R(matrix x, matrix ud1, matrix ud2) {
 }
 
 double ff2T(matrix x, matrix ud1, matrix ud2) {
-    double pom = M_PI * std::sqrt(std::pow(x(0) / M_PI, 2) + std::pow(x(1) / M_PI, 2));
-    return std::sin(pom) / pom;
+    double pom = M_PI * sqrt(pow(x(0) / M_PI, 2) + pow(x(1) / M_PI, 2));
+    return sin(pom) / pom;
 }
 
 double boundary(int i, matrix x, double a) {
@@ -139,12 +141,11 @@ double boundary(int i, matrix x, double a) {
 matrix ff2Tw(matrix x, matrix ud1, matrix ud2) {
     double y = ff2T(x);
 
-    double gValue = -x(0) + 1;
-    if (gValue > 0) {
-        y = 1e10;
-    } else {
+    for (int i = 0; i < 3; ++i) {
+        double gValue = boundary(i, x, ud1(0));
         y -= m2d(ud2 / gValue);
     }
+
     return y;
 }
 
@@ -152,7 +153,7 @@ matrix ff2Tz(matrix x, matrix ud1, matrix ud2) {
     double y = ff2T(x);
 
     for (int i = 0; i < 3; ++i) {
-        double gValue = boundary(i, x(0), x(1), ud1(0));
+        double gValue = boundary(i, x, ud1(0));
         if (gValue > 0)
             y += m2d(ud2 * pow(gValue, 2));
     }
@@ -163,10 +164,16 @@ matrix ff2Tz(matrix x, matrix ud1, matrix ud2) {
 matrix ff2R(matrix x, matrix ud1, matrix ud2) {
     matrix y;
     matrix Y0(4, new double[4]{0, x(0), 100, 0});
-    matrix *Y = solve_ode(df2, 0, 0.01, 7, Y0, ud1, x(1));
+
+    double t0 = 0, dt = 0.01, tend = 7;
+    matrix *Y = solve_ode(df2, t0, dt, tend, Y0, ud1, x(1));
+
     int n = get_len(Y[0]);
     int i50 = 0, i0 = 0;
     for (int i = 0; i < n; ++i) {
+        // Y[1](i, 2) => wysokosc y
+        // i50 => iteracja, w ktorej wysokość y jest najbliższa 50
+        // i0 => iteracja, w ktorej wysokość y jest najbliższa 0
         if (abs(Y[1](i, 2) - 50) < abs(Y[1](i50, 2) - 50))
             i50 = i;
         if (abs(Y[1](i, 2)) < abs(Y[1](i0, 2)))
@@ -174,11 +181,11 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2) {
     }
 
     y = -Y[1](i0, 0);
-    if (abs(x(0) - 10) > 0)
-        y = y + ud2 * pow(abs(x(0) - 10), 2);
-    if (abs(x(1) - 20) > 0)
-        y = y + ud2 * pow(abs(x(1) - 20), 2);
-    if (abs(Y[1](i50, 0) - 5) - 1 > 0)
-        y = y + ud2 * pow(abs(Y[1](i50, 0) - 5) - 1, 2);
+    if (abs(x(0)) - 10 > 0)
+        y = y + ud2 * pow(abs(x(0)) - 10, 2);
+    if (abs(x(1)) - 15 > 0)
+        y = y + ud2 * pow(abs(x(1)) - 15, 2);
+    if (abs(Y[1](i50, 0) - 5) - 0.5 > 0)
+        y = y + ud2 * pow(abs(Y[1](i50, 0) - 5) - 0.5, 2);
     return y;
 }

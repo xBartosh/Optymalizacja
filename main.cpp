@@ -25,7 +25,7 @@ void lab4();
 
 int main() {
     try {
-        lab1();
+        lab2();
     } catch (string EX_INFO) {
         cerr << "ERROR:\n";
         cerr << EX_INFO << endl << endl;
@@ -181,7 +181,7 @@ void lab1() {
     lagFile << "i" << SEPARATOR << "vA" << SEPARATOR << "vB" << SEPARATOR << "tB" << endl;
     opt = lag(ff1R, a, b, epsilon, gamma, maxIter);
     cout << opt;
-    matrix* simDataLag = getSimulationData1R(opt.x);
+    matrix *simDataLag = getSimulationData1R(opt.x);
     lagFile << hcat(simDataLag[0], simDataLag[1]);
     lagFile.close();
     solution::clear_calls();
@@ -189,7 +189,84 @@ void lab1() {
 
 
 void lab2() {
+    double a = 4.0;
+    double epsilon = 1e-3;
+    int nMax = 1e4;
+    double cEx = 1, dcEx = 2;
+    double cIn = 10, dcIn = 0.5;
 
+    // PROBLEM TESTOWY
+    ofstream fileExternal("external_results-" + format("{:.2f}", a) + ".csv");
+    ofstream fileInternal("internal_results-" + format("{:.2f}", a) + ".csv");
+
+    fileExternal <<
+            "i" << SEPARATOR <<
+            "x1_0" << SEPARATOR <<
+            "x2_0" << SEPARATOR <<
+            "x1*" << SEPARATOR <<
+            "x2*" << SEPARATOR <<
+            "r*" << SEPARATOR <<
+            "y*" << SEPARATOR <<
+            "f_calls" << endl;
+    fileInternal <<
+            "i" << SEPARATOR <<
+            "x1_0" << SEPARATOR <<
+            "x2_0" << SEPARATOR <<
+            "x1*" << SEPARATOR <<
+            "x2*" << SEPARATOR <<
+            "r*" << SEPARATOR <<
+            "y*" << SEPARATOR <<
+            "f_calls" << endl;
+
+    for (int i = 0; i < 100; ++i) {
+        matrix x0;
+        solution optEx, optIn;
+
+        do {
+            x0 = 5 * rand_mat(2, 1) + 1;
+        } while (norm(x0) > a);
+
+        optEx = pen(ff2Tz, x0, cEx, dcEx, epsilon, nMax, a);
+        fileExternal <<
+                to_string_with_comma((i + 1)) << SEPARATOR <<
+                to_string_with_comma(x0(0)) << SEPARATOR <<
+                to_string_with_comma(x0(1)) << SEPARATOR <<
+                to_string_with_comma(optEx.x(0)) << SEPARATOR <<
+                to_string_with_comma(optEx.x(1)) << SEPARATOR <<
+                to_string_with_comma(norm(optEx.x)) << SEPARATOR <<
+                to_string_with_comma(m2d(optEx.y)) << SEPARATOR <<
+                to_string_with_comma(m2d(solution::f_calls)) << endl;
+
+        solution::clear_calls();
+
+        optIn = pen(ff2Tw, x0, cIn, dcIn, epsilon, nMax, a);
+        fileInternal <<
+            to_string_with_comma((i + 1)) << SEPARATOR <<
+            to_string_with_comma(x0(0)) << SEPARATOR <<
+            to_string_with_comma(x0(1)) << SEPARATOR <<
+            to_string_with_comma(optIn.x(0)) << SEPARATOR <<
+            to_string_with_comma(optIn.x(1)) << SEPARATOR <<
+            to_string_with_comma(norm(optIn.x)) << SEPARATOR <<
+            to_string_with_comma(m2d(optIn.y)) << SEPARATOR <<
+            to_string_with_comma(m2d(solution::f_calls)) << endl;
+        solution::clear_calls();
+    }
+
+    fileExternal.close();
+    fileInternal.close();
+
+    /* PROBLEM RZECZYWISTY
+    matrix x0 = matrix(2, 1);
+    x0(0) = 20 * m2d(rand_mat()) - 10;
+    x0(1) = 30 * m2d(rand_mat()) - 15;
+    // x0(0) = 5;
+    // x0(1) = 10;
+    cout << x0 << endl << endl;
+
+    solution optR = pen(ff2R, x0, cEx, dcEx, epsilon, nMax);
+    cout << optR << endl;
+    solution::clear_calls();
+    */
 }
 
 void lab3() {
