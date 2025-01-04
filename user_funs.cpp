@@ -146,14 +146,6 @@ matrix ff2Tw(matrix x, matrix ud1, matrix ud2) {
     } else {
         y = y - ud2 / (-x(0) + 1);
     }
-    // for (int i = 0; i < 3; i++) {
-    //     matrix gValue = boundary(i, x, ud1(0));
-    //     if (gValue == 0) {
-    //         boundary(i, x, ud1(0));
-    //         cout << "gvalue = 0, i=" << i << endl;
-    //     }
-    //     y = y - m2d(ud2 / gValue);
-    // }
 
     return y;
 }

@@ -372,8 +372,6 @@ double det(const matrix &A) {
 matrix inv(const matrix &A) {
     try {
         double D = det(A);
-        // cout << "Macierz" << A << endl;
-        // cout << "Wyznacznik" << D << endl;
         if (D == 0)
             throw string("matrix inv(const matrix&):\nwyznacznik macierzy wynosi 0");
         int *nA = get_size(A);

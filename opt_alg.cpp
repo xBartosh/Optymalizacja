@@ -310,22 +310,12 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
 
             // Refleksja
             PO.x = pc + alpha * (pc - S[i_max].x);
-            try {
-                PO.fit_fun(ff, ud1, ud2);
-            } catch (string ex) {
-                cout << "Błąd w fit_fun dla punktu: " << PO << endl;
-                throw ex;
-            }
+            PO.fit_fun(ff, ud1, ud2);
 
             if (PO.y < S[i_min].y) {
                 // Ekspansja
                 PE.x = pc + gamma * (PO.x - pc);
-                try {
-                    PE.fit_fun(ff, ud1, ud2);
-                } catch (string ex) {
-                    cout << "Błąd w fit_fun dla punktu: " << PE << endl;
-                    throw ex;
-                }
+                PE.fit_fun(ff, ud1, ud2);
 
                 S[i_max] = (PE.y < PO.y) ? PE : PO;
             } else if (PO.y < S[i_max].y) {
@@ -334,12 +324,7 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
             } else {
                 // Kontrakcja
                 PZ.x = pc + beta * (S[i_max].x - pc);
-                try {
-                    PZ.fit_fun(ff, ud1, ud2);
-                } catch (string ex) {
-                    cout << "Błąd w fit_fun dla punktu: " << PZ << endl;
-                    throw ex;
-                }
+                PZ.fit_fun(ff, ud1, ud2);
                 if (PZ.y < S[i_max].y) {
                     S[i_max] = PZ;
                 } else {
@@ -347,12 +332,7 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
                     for (int i = 0; i < N; ++i) {
                         if (i != i_min) {
                             S[i].x = S[i_min].x + delta * (S[i].x - S[i_min].x);
-                            try {
-                                S[i].fit_fun(ff, ud1, ud2);
-                            } catch (string ex) {
-                                cout << "Błąd w fit_fun dla punktu: " << S[i] << endl;
-                                throw ex;
-                            }
+                            S[i].fit_fun(ff, ud1, ud2);
                         }
                     }
                 }
