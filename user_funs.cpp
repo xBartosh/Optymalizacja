@@ -125,7 +125,7 @@ double ff2T(matrix x, matrix ud1, matrix ud2) {
     return sin(pom) / pom;
 }
 
-matrix boundary(int i, matrix x, double a) {
+double boundary(int i, matrix x, double a) {
     switch (i) {
         case 0:
             return -x(0) + 1.0;
@@ -139,12 +139,24 @@ matrix boundary(int i, matrix x, double a) {
 }
 
 matrix ff2Tw(matrix x, matrix ud1, matrix ud2) {
-    matrix y = ff2T(x);
+    double y = ff2T(x);
 
     if (-x(0) + 1 > 0) {
         y = 1e10;
     } else {
-        y = y - ud2 / (-x(0) + 1);
+        y = y - m2d(ud2 / (-x(0) + 1));
+    }
+
+    if (-x(1) + 1 > 0) {
+        y = 1e10;
+    } else {
+        y = y - m2d(ud2 / (-x(1) + 1));
+    }
+
+    if (norm(x) - ud1 > 0) {
+        y = 1e10;
+    } else {
+        y = y - m2d(ud2 / (norm(x) - ud1));
     }
 
     return y;
@@ -162,12 +174,17 @@ matrix ff2Tz(matrix x, matrix ud1, matrix ud2) {
     return y;
 }
 
-matrix ff2R(matrix x, matrix ud1, matrix ud2) {
-    matrix y;
+matrix *getSimulationData2R(matrix x, matrix ud1, matrix ud2) {
+    double t0 = 0, dt = 0.01, tend = 7;
     matrix Y0(4, new double[4]{0, x(0), 100, 0});
 
-    double t0 = 0, dt = 0.01, tend = 7;
-    matrix *Y = solve_ode(df2, t0, dt, tend, Y0, ud1, x(1));
+    return solve_ode(df2, t0, dt, tend, Y0, ud1, x(1));
+}
+
+matrix ff2R(matrix x, matrix ud1, matrix ud2) {
+    matrix y;
+
+    matrix *Y = getSimulationData2R(x, ud1, ud2);
 
     int n = get_len(Y[0]);
     int i50 = 0, i0 = 0;

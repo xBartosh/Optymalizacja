@@ -188,14 +188,19 @@ void lab1() {
 }
 
 
+bool isLegit(matrix x0, double a) {
+    return x0(0) >= 1 && x0(1) >= 1 && pow(x0(0), 2) + pow(x0(1), 2) <= pow(a, 2);
+}
+
 void lab2() {
-    double a = 5.0;
+    double a = 4.4934;
     double epsilon = 1e-3;
     int nMax = 1e4;
     double cEx = 1, dcEx = 2;
     double cIn = 10, dcIn = 0.5;
 
     // PROBLEM TESTOWY
+    /*
     ofstream fileExternal("external_results-" + format("{:.2f}", a) + ".csv");
     ofstream fileInternal("internal_results-" + format("{:.2f}", a) + ".csv");
 
@@ -224,7 +229,7 @@ void lab2() {
 
         do {
             x0 = 5 * rand_mat(2, 1) + 1;
-        } while (norm(x0) > a);
+        } while (!isLegit(x0, a));
 
         optEx = pen(ff2Tz, x0, cEx, dcEx, epsilon, nMax, a);
         fileExternal <<
@@ -236,37 +241,44 @@ void lab2() {
                 to_string_with_comma(norm(optEx.x)) << SEPARATOR <<
                 to_string_with_comma(m2d(optEx.y)) << SEPARATOR <<
                 to_string_with_comma(m2d(solution::f_calls)) << endl;
-
         solution::clear_calls();
 
         optIn = pen(ff2Tw, x0, cIn, dcIn, epsilon, nMax, a);
         fileInternal <<
-            to_string_with_comma((i + 1)) << SEPARATOR <<
-            to_string_with_comma(x0(0)) << SEPARATOR <<
-            to_string_with_comma(x0(1)) << SEPARATOR <<
-            to_string_with_comma(optIn.x(0)) << SEPARATOR <<
-            to_string_with_comma(optIn.x(1)) << SEPARATOR <<
-            to_string_with_comma(norm(optIn.x)) << SEPARATOR <<
-            to_string_with_comma(m2d(optIn.y)) << SEPARATOR <<
-            to_string_with_comma(m2d(solution::f_calls)) << endl;
+                to_string_with_comma((i + 1)) << SEPARATOR <<
+                to_string_with_comma(x0(0)) << SEPARATOR <<
+                to_string_with_comma(x0(1)) << SEPARATOR <<
+                to_string_with_comma(optIn.x(0)) << SEPARATOR <<
+                to_string_with_comma(optIn.x(1)) << SEPARATOR <<
+                to_string_with_comma(norm(optIn.x)) << SEPARATOR <<
+                to_string_with_comma(m2d(optIn.y)) << SEPARATOR <<
+                to_string_with_comma(m2d(solution::f_calls)) << endl;
         solution::clear_calls();
     }
 
     fileExternal.close();
     fileInternal.close();
+    */
 
-    /* PROBLEM RZECZYWISTY
+    // PROBLEM RZECZYWISTY
     matrix x0 = matrix(2, 1);
     x0(0) = 20 * m2d(rand_mat()) - 10;
     x0(1) = 30 * m2d(rand_mat()) - 15;
-    // x0(0) = 5;
-    // x0(1) = 10;
     cout << x0 << endl << endl;
 
     solution optR = pen(ff2R, x0, cEx, dcEx, epsilon, nMax);
     cout << optR << endl;
+
+    ofstream simFile("simulation-nm.csv");
+    simFile << "t" << SEPARATOR << "x" << SEPARATOR << "y" << endl;
+    matrix *simData = getSimulationData2R(optR.x);
+    for (int i = 0; i < get_len(*simData); i++) {
+        simFile << to_string_with_comma(simData[0](i, 0)) << SEPARATOR << to_string_with_comma(simData[1](i, 0)) << SEPARATOR << to_string_with_comma(simData[1](i, 2)) << endl;
+    }
+    // simFile << hcat(simData[0], simData[1]);
+    simFile.close();
+
     solution::clear_calls();
-    */
 }
 
 void lab3() {
