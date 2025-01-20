@@ -379,9 +379,9 @@ solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, m
             d = -X.grad(gf, ud1, ud2);
 
             if (h0 < 0) {
-                matrix P = matrix(2, 1);
-                P(0) = m2d(X.x);
-                P(1) = m2d(d);
+                matrix P = matrix(2, 2);
+                P[0] = X.x;
+                P[1] = d;
                 ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
                 h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
                 X1.x = X.x + h.x * d;
