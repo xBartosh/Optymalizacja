@@ -25,4 +25,8 @@ matrix ff2Tw(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix ff2R(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix* getSimulationData2R( matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
+matrix ff3T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix gf3(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix hf3(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
 

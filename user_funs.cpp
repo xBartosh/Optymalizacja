@@ -207,3 +207,30 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2) {
         y = y + ud2 * pow(abs(Y[1](i50, 0) - 5) - 0.5, 2);
     return y;
 }
+
+matrix ff3T(matrix x, matrix ud1, matrix ud2) {
+    matrix y;
+    if (isnan(ud2(0, 0))) {
+        y = pow(x(0) + 2 * (x(1)) - 7, 2) + pow(2 * x(0) + x(1) - 5, 2);
+    } else {
+        y = ff3T(ud2[0] + x * ud2[1]);
+    }
+
+    return y;
+}
+
+matrix gf3(matrix x, matrix ud1, matrix ud2) {
+    matrix g(2, 1);
+    g(0) = 10 * x(0) + 8 * x(1) - 34;
+    g(1) = 8 * x(0) + 10 * x(1) - 38;
+    return g;
+}
+
+matrix hf3(matrix x, matrix ud1, matrix ud2) {
+    matrix H(2, 2);
+    H(0, 0) = 10;
+    H(0, 1) = 8;
+    H(1, 0) = 8;
+    H(1, 1) = 10;
+    return H;
+}

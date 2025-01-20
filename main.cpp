@@ -25,7 +25,7 @@ void lab4();
 
 int main() {
     try {
-        lab2();
+        lab3();
     } catch (string EX_INFO) {
         cerr << "ERROR:\n";
         cerr << EX_INFO << endl << endl;
@@ -273,7 +273,8 @@ void lab2() {
     simFile << "t" << SEPARATOR << "x" << SEPARATOR << "y" << endl;
     matrix *simData = getSimulationData2R(optR.x);
     for (int i = 0; i < get_len(*simData); i++) {
-        simFile << to_string_with_comma(simData[0](i, 0)) << SEPARATOR << to_string_with_comma(simData[1](i, 0)) << SEPARATOR << to_string_with_comma(simData[1](i, 2)) << endl;
+        simFile << to_string_with_comma(simData[0](i, 0)) << SEPARATOR << to_string_with_comma(simData[1](i, 0)) <<
+                SEPARATOR << to_string_with_comma(simData[1](i, 2)) << endl;
     }
     // simFile << hcat(simData[0], simData[1]);
     simFile.close();
@@ -282,6 +283,39 @@ void lab2() {
 }
 
 void lab3() {
+    solution opt;
+    int Nmax = 10e3;
+    double h = 0.12;
+    double epsilon = 1e-3;
+
+    ofstream sd("sg_results.csv");
+    ofstream cg("cg_results.csv");
+    ofstream n("n_results.csv");
+
+    for (int i = 0; i < 100; ++i) {
+        matrix x0 = 20 * rand_mat(2, 1) - 10;
+
+        solution SD_sol = SD(ff3T, gf3, x0, h, epsilon, Nmax);
+        sd << x0(0) << SEPARATOR << x0(1) << SEPARATOR << SD_sol.x(0) << SEPARATOR << SD_sol.x(1) << SEPARATOR
+                << SD_sol.y[0] << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
+
+        solution::clear_calls();
+
+        solution CG_sol = CG(ff3T, gf3, x0, h, epsilon, Nmax);
+        cg << x0(0) << SEPARATOR << x0(1) << SEPARATOR << CG_sol.x(0) << SEPARATOR << CG_sol.x(1) << SEPARATOR
+                << CG_sol.y[0] << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
+
+        solution::clear_calls();
+
+        solution N_sol = Newton(ff3T, gf3, hf3, x0, h, epsilon, Nmax);
+        n << x0(0) << SEPARATOR << x0(1) << SEPARATOR << N_sol.x(0) << SEPARATOR << N_sol.x(1) << SEPARATOR
+                << N_sol.y[0] << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
+    }
+
+    sd.close();
+    cg.close();
+    n.close();
+    solution::clear_calls();
 }
 
 void lab4() {

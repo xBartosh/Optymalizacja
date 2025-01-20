@@ -365,14 +365,38 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
     }
 }
 
-
 solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, matrix), matrix x0, double h0,
             double epsilon, int Nmax, matrix ud1, matrix ud2) {
     try {
-        solution Xopt;
-        //Tu wpisz kod funkcji
+        solution X, X1;
+        X.x = x0;
+        int n = get_len(x0);
+        matrix d(n, 1);
+        solution h;
+        double* ab;
 
-        return Xopt;
+        while (true) {
+            d = -X.grad(gf, ud1, ud2);
+
+            if (h0 < 0) {
+                matrix P = matrix(2, 1);
+                P(0) = m2d(X.x);
+                P(1) = m2d(d);
+                ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+                h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+                X1.x = X.x + h.x * d;
+            } else {
+                X1.x = X.x + h0 * d;
+            }
+
+            if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
+                X1.fit_fun(ff, ud1, ud2);
+                X1.flag = 0;
+                return X1;
+            }
+
+            X = X1;
+        }
     } catch (string ex_info) {
         throw ("solution SD(...):\n" + ex_info);
     }
@@ -381,10 +405,38 @@ solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, m
 solution CG(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, matrix), matrix x0, double h0,
             double epsilon, int Nmax, matrix ud1, matrix ud2) {
     try {
-        solution Xopt;
-        //Tu wpisz kod funkcji
+        int n = get_len(x0);
+        solution X, X1;
+        X.x = x0;
+        matrix d(n, 1);
+        solution h;
+        double* ab, beta;
 
-        return Xopt;
+        d = -X.grad(gf, ud1, ud2);
+
+        while (true) {
+            if (h0 < 0) {
+                matrix P(2,1);
+                P(0) = m2d(X.x);
+                P(1) = m2d(d);
+                ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+                h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+                X1.x = X.x + h.x * d;
+            } else {
+                X1.x = X.x + h0 * d;
+            }
+
+            if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
+                X1.fit_fun(ff, ud1, ud2);
+                X1.flag = 0;
+                return X1;
+            }
+
+            X1.grad(gf, ud1, ud2);
+            beta = pow(norm(X1.g), 2) / pow(norm(X.g), 2);
+            d = -X1.g + beta * d;
+            X = X1;
+        }
     } catch (string ex_info) {
         throw ("solution CG(...):\n" + ex_info);
     }
@@ -394,10 +446,37 @@ solution Newton(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matri
                 matrix (*Hf)(matrix, matrix, matrix), matrix x0, double h0, double epsilon, int Nmax, matrix ud1,
                 matrix ud2) {
     try {
-        solution Xopt;
-        //Tu wpisz kod funkcji
+        int n = get_len(x0);
+        solution X, X1;
+        X.x = x0;
+        matrix d(n, 1);
+        solution h;
+        double* ab;
 
-        return Xopt;
+        while (true) {
+            X.grad(gf);
+            X.hess(Hf);
+            d = -inv(X.H) * X.g;
+
+            if (h0 < 0) {
+                matrix P(2,1);
+                P(0) = m2d(X.x);
+                P(1) = m2d(d);
+                ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+                h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+                X1.x = X.x + h.x * d;
+            } else {
+                X1.x = X.x + h0 * d;
+            }
+
+            if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
+                X1.fit_fun(ff, ud1, ud2);
+                X1.flag = 0;
+                return X1;
+            }
+
+            X = X1;
+        }
     } catch (string ex_info) {
         throw ("solution Newton(...):\n" + ex_info);
     }
@@ -407,8 +486,37 @@ solution golden(matrix (*ff)(matrix, matrix, matrix), double a, double b, double
                 matrix ud2) {
     try {
         solution Xopt;
-        //Tu wpisz kod funkcji
+        int i = 0;
+        double aa, bb, cc, dd;
+        double alfa = (sqrt(5) - 1) / 2.0;
+        aa = a;
+        bb = b;
+        cc = bb - alfa * (bb - aa);
+        dd = aa + alfa * (bb - aa);
 
+        do {
+            double fci = m2d(ff(cc, ud1, ud2));
+            double fdi = m2d(ff(dd, ud1, ud2));
+
+            if (fci < fdi) {
+                aa = aa;
+                bb = dd;
+                dd = cc;
+                cc = bb - alfa * (bb - aa);
+            } else {
+                aa = cc;
+                bb = bb;
+                cc = dd;
+                dd = aa - alfa * (bb - aa);
+            }
+
+            i = i + 1;
+            if (solution::f_calls > Nmax) {
+                throw ("error");
+            }
+        } while ((bb - aa) > epsilon);
+
+        Xopt.x = (aa + bb) / 2.0;
         return Xopt;
     } catch (string ex_info) {
         throw ("solution golden(...):\n" + ex_info);
