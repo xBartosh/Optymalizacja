@@ -1,4 +1,5 @@
 #include"opt_alg.h"
+#define SEPARATOR ";"
 
 solution MC(matrix (*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, double epsilon, int Nmax, matrix ud1,
             matrix ud2) {
@@ -37,18 +38,18 @@ double *expansion(matrix (*ff)(matrix, matrix, matrix), double x0, double d, dou
         X1.fit_fun(ff, ud1, ud2);
 
         if (X1.y == X0.y) {
-            p[0] = m2d(X0.y);
-            p[1] = m2d(X1.y);
+            p[0] = m2d(X0.x);
+            p[1] = m2d(X1.x);
             return p;
         }
 
         if (X1.y > X0.y) {
             d = -d;
-            X1.x = x0 + d;
+            X1.x = X0.x + d;
             X1.fit_fun(ff, ud1, ud2);
             if (X1.y >= X0.y) {
-                p[0] = m2d(X1.y);
-                p[1] = m2d(X0.y - d);
+                p[0] = m2d(X1.x);
+                p[1] = m2d(X0.x - d);
                 return p;
             }
         }
@@ -365,25 +366,35 @@ solution sym_NM(matrix (*ff)(matrix, matrix, matrix), matrix x0, double s, doubl
     }
 }
 
+string to_string_with_comma_2(double value) {
+    ostringstream oss;
+    oss << value;
+    string result = oss.str();
+    replace(result.begin(), result.end(), '.', ',');
+    return result;
+}
+
 solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, matrix), matrix x0, double h0,
             double epsilon, int Nmax, matrix ud1, matrix ud2) {
     try {
+        ofstream sd("sd_results-point-" + format("{:.2f}", h0) + ".csv");
         solution X, X1;
         X.x = x0;
         int n = get_len(x0);
         matrix d(n, 1);
         solution h;
-        double* ab;
+        double *ab;
+
+        sd << "x1*" << SEPARATOR << "x2*" << SEPARATOR << endl;
 
         while (true) {
-            d = -X.grad(gf, ud1, ud2);
+            d = -X.grad(gf);
 
             if (h0 < 0) {
-                matrix P = matrix(2, 2);
-                P[0] = X.x;
-                P[1] = d;
+                matrix P = {X.x, d};
                 ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
                 h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+                delete[] ab;
                 X1.x = X.x + h.x * d;
             } else {
                 X1.x = X.x + h0 * d;
@@ -392,12 +403,14 @@ solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, m
             if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
                 X1.fit_fun(ff, ud1, ud2);
                 X1.flag = 0;
+                sd << to_string_with_comma_2(X1.x(0)) << SEPARATOR << to_string_with_comma_2(X1.x(1)) << endl;
                 return X1;
             }
 
             X = X1;
+            sd << to_string_with_comma_2(X.x(0)) << SEPARATOR << to_string_with_comma_2(X.x(1)) << endl;
         }
-    } catch (string ex_info) {
+    } catch (string &ex_info) {
         throw ("solution SD(...):\n" + ex_info);
     }
 }
@@ -405,20 +418,20 @@ solution SD(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, m
 solution CG(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, matrix), matrix x0, double h0,
             double epsilon, int Nmax, matrix ud1, matrix ud2) {
     try {
+        ofstream cg("cg_results-point-" + format("{:.2f}", h0) + ".csv");
+        cg << "x1*" << SEPARATOR << "x2*" << SEPARATOR << endl;
         int n = get_len(x0);
         solution X, X1;
         X.x = x0;
         matrix d(n, 1);
         solution h;
-        double* ab, beta;
+        double *ab, beta;
 
-        d = -X.grad(gf, ud1, ud2);
+        d = -X.grad(gf);
 
         while (true) {
             if (h0 < 0) {
-                matrix P(2,1);
-                P(0) = m2d(X.x);
-                P(1) = m2d(d);
+                matrix P = {X.x, d};
                 ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
                 h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
                 X1.x = X.x + h.x * d;
@@ -429,15 +442,17 @@ solution CG(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matrix, m
             if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
                 X1.fit_fun(ff, ud1, ud2);
                 X1.flag = 0;
+                cg << to_string_with_comma_2(X1.x(0)) << SEPARATOR << to_string_with_comma_2(X1.x(1)) << endl;
                 return X1;
             }
 
-            X1.grad(gf, ud1, ud2);
+            X1.grad(gf);
             beta = pow(norm(X1.g), 2) / pow(norm(X.g), 2);
             d = -X1.g + beta * d;
             X = X1;
+            cg << to_string_with_comma_2(X.x(0)) << SEPARATOR << to_string_with_comma_2(X.x(1)) << endl;
         }
-    } catch (string ex_info) {
+    } catch (string &ex_info) {
         throw ("solution CG(...):\n" + ex_info);
     }
 }
@@ -446,12 +461,14 @@ solution Newton(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matri
                 matrix (*Hf)(matrix, matrix, matrix), matrix x0, double h0, double epsilon, int Nmax, matrix ud1,
                 matrix ud2) {
     try {
+        ofstream newton("n_results-point-" + format("{:.2f}", h0) + ".csv");
+        newton << "x1*" << SEPARATOR << "x2*" << SEPARATOR << endl;
         int n = get_len(x0);
         solution X, X1;
         X.x = x0;
         matrix d(n, 1);
         solution h;
-        double* ab;
+        double *ab;
 
         while (true) {
             X.grad(gf);
@@ -459,9 +476,7 @@ solution Newton(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matri
             d = -inv(X.H) * X.g;
 
             if (h0 < 0) {
-                matrix P(2,1);
-                P(0) = m2d(X.x);
-                P(1) = m2d(d);
+                matrix P = {X.x, d};
                 ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
                 h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
                 X1.x = X.x + h.x * d;
@@ -472,12 +487,14 @@ solution Newton(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matri
             if (norm(X1.x - X.x) < epsilon || solution::f_calls > Nmax || solution::g_calls > Nmax) {
                 X1.fit_fun(ff, ud1, ud2);
                 X1.flag = 0;
+                newton << to_string_with_comma_2(X1.x(0)) << SEPARATOR << to_string_with_comma_2(X1.x(1)) << endl;
                 return X1;
             }
 
             X = X1;
+            newton << to_string_with_comma_2(X.x(0)) << SEPARATOR << to_string_with_comma_2(X.x(1)) << endl;
         }
-    } catch (string ex_info) {
+    } catch (string &ex_info) {
         throw ("solution Newton(...):\n" + ex_info);
     }
 }
@@ -485,40 +502,32 @@ solution Newton(matrix (*ff)(matrix, matrix, matrix), matrix (*gf)(matrix, matri
 solution golden(matrix (*ff)(matrix, matrix, matrix), double a, double b, double epsilon, int Nmax, matrix ud1,
                 matrix ud2) {
     try {
-        solution Xopt;
-        int i = 0;
-        double aa, bb, cc, dd;
-        double alfa = (sqrt(5) - 1) / 2.0;
-        aa = a;
-        bb = b;
-        cc = bb - alfa * (bb - aa);
-        dd = aa + alfa * (bb - aa);
+        double alpha = (sqrt(5) - 1) / 2;
+        solution a0(a), b0(b);
+        solution c0 = b0.x - alpha * (b0.x - a0.x);
+        solution d0 = a0.x + alpha * (b0.x - a0.x);
 
-        do {
-            double fci = m2d(ff(cc, ud1, ud2));
-            double fdi = m2d(ff(dd, ud1, ud2));
+        while (true) {
+            matrix fci = c0.fit_fun(ff, ud1, ud2);
+            matrix fdi = d0.fit_fun(ff, ud1, ud2);
 
             if (fci < fdi) {
-                aa = aa;
-                bb = dd;
-                dd = cc;
-                cc = bb - alfa * (bb - aa);
+                b0.x = d0.x;
+                d0.x = c0.x;
+                c0.x = b0.x - alpha * (b0.x - a0.x);
             } else {
-                aa = cc;
-                bb = bb;
-                cc = dd;
-                dd = aa - alfa * (bb - aa);
+                a0.x = c0.x;
+                c0.x = d0.x;
+                d0.x = a0.x + alpha * (b0.x - a0.x);
             }
 
-            i = i + 1;
-            if (solution::f_calls > Nmax) {
-                throw ("error");
+            if (solution::f_calls > Nmax || m2d(b0.x - a0.x) < epsilon) {
+                solution x((a0.x + b0.x) / 2);
+                x.flag = 1;
+                return x;
             }
-        } while ((bb - aa) > epsilon);
-
-        Xopt.x = (aa + bb) / 2.0;
-        return Xopt;
-    } catch (string ex_info) {
-        throw ("solution golden(...):\n" + ex_info);
+        }
+    } catch (const std::string &ex_info) {
+        throw std::runtime_error("solution golden(...):\n" + ex_info);
     }
 }

@@ -213,7 +213,7 @@ matrix ff3T(matrix x, matrix ud1, matrix ud2) {
     if (isnan(ud2(0, 0))) {
         y = pow(x(0) + 2 * x(1) - 7, 2) + pow(2 * x(0) + x(1) - 5, 2);
     } else {
-        y = ff3T(ud2[0] + x * ud2[1], 0, ud1);
+        y = ff3T(ud2[0] + x * ud2[1]);
     }
 
     return y;

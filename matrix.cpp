@@ -58,6 +58,37 @@ matrix::matrix(const matrix &A) {
     }
 }
 
+matrix::matrix(std::initializer_list<matrix> init_list) {
+    // Check if the initializer list has exactly two matrices
+    if (init_list.size() != 2) {
+        throw std::string("Initializer list must contain exactly two 2x1 matrices to form a 2x2 matrix.");
+    }
+
+    // Verify all matrices in the list are 2x1
+    for (const auto& mat : init_list) {
+        if (mat.n != 2 || mat.m != 1) {
+            throw std::string("All matrices in the initializer list must be of size 2x1.");
+        }
+    }
+
+    // Set dimensions of the resulting matrix
+    n = 2; // Two rows
+    m = 2; // Two columns
+    M = new double*[n];
+    for (int i = 0; i < n; ++i) {
+        M[i] = new double[m];
+    }
+
+    // Copy data from the initializer list to form a 2x2 matrix
+    int col = 0;
+    for (const auto& mat : init_list) {
+        M[0][col] = mat(0, 0); // First row of the column
+        M[1][col] = mat(1, 0); // Second row of the column
+        ++col;
+    }
+}
+
+
 matrix::~matrix() {
     for (int i = 0; i < n; ++i)
         delete[] M[i];

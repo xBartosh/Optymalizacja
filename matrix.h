@@ -8,6 +8,7 @@
 #include<fstream>
 #include<random>
 #include<chrono>
+#include <initializer_list>
 using namespace std;
 
 #define SEP_SYMBOL ','
@@ -24,6 +25,7 @@ public:
 	matrix(int, double*); // throw (string);
 	matrix(int, int, double**); // throw (string);
 	matrix(const matrix&);
+	matrix(std::initializer_list<matrix> init_list);
 	~matrix();
 	matrix& operator=(const matrix&);
 	matrix operator[](int) const; // throw (string);

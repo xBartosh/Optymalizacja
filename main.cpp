@@ -285,32 +285,52 @@ void lab2() {
 void lab3() {
     solution opt;
     int Nmax = 10e3;
-    double h = -0.1;
+    double h = -0.2;
     double epsilon = 1e-3;
 
-    ofstream sd("sg_results-" + format("{:.2f}", h) + ".csv");
+    ofstream sd("sd_results-" + format("{:.2f}", h) + ".csv");
     ofstream cg("cg_results-" + format("{:.2f}", h) + ".csv");
     ofstream n("n_results-" + format("{:.2f}", h) + ".csv");
 
-    for (int i = 0; i < 100; ++i) {
-        matrix x0 = 20 * rand_mat(2, 1) - 10;
+    sd << "x0_1" << SEPARATOR << "x0_2" << SEPARATOR << "x1*" << SEPARATOR << "x2*" << SEPARATOR << "y*" << SEPARATOR
+            << "f_calls" << SEPARATOR << "g_calls" << endl;
 
-        solution SD_sol = SD(ff3T, gf3, x0, h, epsilon, Nmax);
-        sd << x0(0) << SEPARATOR << x0(1) << SEPARATOR << SD_sol.x(0) << SEPARATOR << SD_sol.x(1) << SEPARATOR
-                << SD_sol.y(0) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
+    cg << "x0_1" << SEPARATOR << "x0_2" << SEPARATOR << "x1*" << SEPARATOR << "x2*" << SEPARATOR << "y*" << SEPARATOR
+            << "f_calls" << SEPARATOR << "g_calls" << endl;
 
-        solution::clear_calls();
+    n << "x0_1" << SEPARATOR << "x0_2" << SEPARATOR << "x1*" << SEPARATOR << "x2*" << SEPARATOR << "y*" << SEPARATOR
+            << "f_calls" << SEPARATOR << "g_calls" << SEPARATOR << "h_calls" << endl;
 
-        solution CG_sol = CG(ff3T, gf3, x0, h, epsilon, Nmax);
-        cg << x0(0) << SEPARATOR << x0(1) << SEPARATOR << CG_sol.x(0) << SEPARATOR << CG_sol.x(1) << SEPARATOR
-                << CG_sol.y(0) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
+    // for (int i = 0; i < 100; ++i) {
+    matrix x0(2, 1);
+    x0(0) = -6.3398;
+    x0(1) = -0.121063;
 
-        solution::clear_calls();
+    solution SD_sol = SD(ff3T, gf3, x0, h, epsilon, Nmax);
+    sd << to_string_with_comma(x0(0)) << SEPARATOR << to_string_with_comma(x0(1)) << SEPARATOR <<
+            to_string_with_comma(SD_sol.x(0)) << SEPARATOR << to_string_with_comma(SD_sol.x(1)) << SEPARATOR
+            << to_string_with_comma(SD_sol.y(0)) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls
+            << endl;
 
-        solution N_sol = Newton(ff3T, gf3, hf3, x0, h, epsilon, Nmax);
-        n << x0(0) << SEPARATOR << x0(1) << SEPARATOR << N_sol.x(0) << SEPARATOR << N_sol.x(1) << SEPARATOR
-                << N_sol.y(0) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls << endl;
-    }
+    solution::clear_calls();
+
+    solution CG_sol = CG(ff3T, gf3, x0, h, epsilon, Nmax);
+    cg << to_string_with_comma(x0(0)) << SEPARATOR << to_string_with_comma(x0(1)) << SEPARATOR <<
+            to_string_with_comma(CG_sol.x(0)) << SEPARATOR << to_string_with_comma(CG_sol.x(1)) << SEPARATOR
+            << to_string_with_comma(CG_sol.y(0)) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls
+            << endl;
+
+    solution::clear_calls();
+
+    solution N_sol = Newton(ff3T, gf3, hf3, x0, h, epsilon, Nmax);
+    n << to_string_with_comma(x0(0)) << SEPARATOR << to_string_with_comma(x0(1)) << SEPARATOR <<
+            to_string_with_comma(N_sol.x(0)) << SEPARATOR << to_string_with_comma(N_sol.x(1)) << SEPARATOR
+            << to_string_with_comma(N_sol.y(0)) << SEPARATOR << solution::f_calls << SEPARATOR << solution::g_calls
+            << SEPARATOR << solution::H_calls
+            << endl;
+
+    solution::clear_calls();
+    // }
 
     sd.close();
     cg.close();
